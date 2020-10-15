@@ -3,6 +3,40 @@ Report for One Day of Week
 Rachel Keller
 October 16, 2020
 
+Introduction
+============
+
+The data we will be analyzing in this project is a daily count of rental
+bikes between years 2011 and 2012 in the Capital bikeshare system. This
+bike share data set includes information about the day of rental and the
+weather on that particular day. Below is a list of the variables that
+will be available for us to include in our models and a brief
+description:
+
+-   instant: record index
+-   dteday : date
+-   season : season (1:winter, 2:spring, 3:summer, 4:fall)
+-   yr : year (0: 2011, 1:2012)
+-   mnth : month ( 1 to 12)
+-   hr : hour (0 to 23)
+-   holiday : weather day is holiday or not
+-   weekday : day of the week
+-   workingday : if day is neither weekend nor holiday is 1, otherwise
+    is 0
+-   weathersit :
+    -   1: Clear, Few clouds, Partly cloudy, Partly cloudy
+    -   2: Mist + Cloudy, Mist + Broken clouds, Mist + Few clouds, Mist
+    -   3: Light Snow, Light Rain + Thunderstorm + Scattered clouds,
+        Light Rain + Scattered clouds
+    -   4: Heavy Rain + Ice Pallets + Thunderstorm + Mist, Snow + Fog
+-   temp : Normalized temperature in Celsius
+-   atemp: Normalized feeling temperature in Celsius
+-   hum: Normalized humidity
+-   windspeed: Normalized wind speed
+-   cnt: count of total rental bikes
+
+<!-- -->
+
     set.seed(123)
     library(tidyverse)
     library(caret)
@@ -90,8 +124,7 @@ Group B Data:
     ##  value of 10
     ## RMSE was used to select the optimal model using the smallest value.
     ## The final values used for the model were n.trees =
-    ##  150, interaction.depth = 1, shrinkage = 0.1 and n.minobsinnode
-    ##  = 10.
+    ##  150, interaction.depth = 1, shrinkage = 0.1 and n.minobsinnode = 10.
 
     treePred <- predict(treeFit, newdata = bikeDataTest)
     postResample(treePred, bikeDataTest$cnt)
