@@ -1,0 +1,53 @@
+---
+title: "Report for One Day of Week"
+author: "Rachel Keller"
+date: "October 16, 2020"
+output: rmarkdown::github_document
+params: 
+  dayofWeek: NULL
+---
+
+```{r}
+set.seed(123)
+library(tidyverse)
+library(caret)
+```
+
+Group B Data:
+```{r, message = FALSE}
+bikeData <- read_csv("day.csv")
+bikeData$dteday <- as.Date(bikeData$dteday, format = "%m/%d/%Y")
+bikeData <- bikeData %>% select(-c(casual, registered)) %>% filter(weekday == params$dayofWeek)
+str(bikeData)
+```
+
+```{r}
+bikeDataIndex <- createDataPartition(bikeData$cnt, p = 0.7, list = FALSE)
+bikeDataTrain <- bikeData[bikeDataIndex, ]
+bikeDataTest <- bikeData[-bikeDataIndex, ]
+```
+
+```{r, warning=FALSE}
+(treeFit <- train(cnt ~ ., data = bikeDataTrain,
+               method = "rpart",
+               preProcess = c("center", "scale"),
+               trControl = trainControl(method = "LOOCV")))
+```
+
+```{r, warning=FALSE}
+(boostedtreeFit <- train(cnt ~ ., data = bikeDataTrain,
+               method = "gbm",
+               preProcess = c("center", "scale"),
+               trControl = trainControl(method = "LOOCV"),
+               verbose = FALSE))
+```
+
+```{r}
+treePred <- predict(treeFit, newdata = bikeDataTest)
+postResample(treePred, bikeDataTest$cnt)
+```
+
+```{r}
+boostedtreePred <- predict(boostedtreeFit, newdata = bikeDataTest)
+postResample(boostedtreePred, bikeDataTest$cnt)
+```

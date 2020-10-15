@@ -1,0 +1,6 @@
+library(tidyverse)
+library(rmarkdown)
+params <- lapply(0:6, FUN = function(x){list(dayofWeek = x)})
+outputFile <- paste0(c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"), ".md")
+reports <- (tibble(outputFile, params))
+apply(reports, MARGIN = 1, FUN = function(x){render(input = "ReportforOneDayofWeek.Rmd", output_file = x[[1]], params = x[[2]])})
