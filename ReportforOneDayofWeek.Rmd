@@ -1,11 +1,10 @@
 ---
 title: "Report for One Day of Week"
-author: "Rachel Keller"
-date: "October 16, 2020"
 output: rmarkdown::github_document
 params: 
   dayofWeek: NULL
 ---
+
 # Introduction
 
 The data we will be analyzing in this project is a daily count of rental bikes between years 2011 and 2012 in the Capital bikeshare system. This bike share data set includes information about the day of rental and the weather on that particular day. Below is a list of the variables that will be available for us to include in our models and a brief description:
@@ -13,7 +12,6 @@ The data we will be analyzing in this project is a daily count of rental bikes b
 * season : season (1:winter, 2:spring, 3:summer, 4:fall)
 * yr : year (0: 2011, 1:2012)
 * mnth : month ( 1 to 12)
-* hr : hour (0 to 23)
 * holiday : weather day is holiday or not
 * weekday : day of the week
 * workingday : if day is neither weekend nor holiday is 1, otherwise is 0
@@ -30,13 +28,14 @@ The data we will be analyzing in this project is a daily count of rental bikes b
 
 The purpose of this analysis is to compare two models in terms of their predictive performance. As this is a regression problem, we will use RMSE to determine which model is the better fit. The models we will fit are a non-ensemble tree model and a boosted tree model. Tuning parameters for both models will be selected using leave one out cross validation. We will fit both of these models on the training data set and evaluate the RMSE on the test set. 
 
-# Set Up and Required Packages
+# Packages
 
 We will load in our necessary packages, `tidyverse` and `caret`. We will also set the seed, so our results are reproducible. 
 ```{r}
 set.seed(123)
 library(tidyverse)
 library(caret)
+library(ggplot2)
 ```
 
 # Reading in Data
@@ -58,10 +57,63 @@ bikeDataTest <- bikeData[-bikeDataIndex, ]
 
 # Summarizations of Data
 
+First we will look at the five number summary of each variable. 
 ```{r}
 summary(bikeDataTrain)
-corrplot::corrplot(cor(bikeDataTrain))
 ```
+
+From this output, we can see that the yr, holiday, and workingday day variables are binary. And the season, mnth, and weathersit are categorical in nature.  So, we will create a contingency table of these variables and the count of bikes shared. To do this we will use the `aggregate` function in combination with `kable`. First, a table of the count and year.
+
+```{r}
+knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$yr), FUN = sum), col.names = c("Year", "Sum of Count"))
+```
+
+We can see that the bike share rented out more bikes in the year 2012, than 2011. Secondly, we will look at a table of the count and holiday.
+
+```{r}
+knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$holiday), FUN = sum), col.names = c("Holiday", "Sum of Count"))
+```
+
+As expected, this bike sharing company does more business on non-holidays, as there are more of these days in a year than holidays. Finally, we will look at the count and working days. 
+
+```{r}
+knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$workingday), FUN = sum), col.names = c("Working Day", "Sum of Count"))
+```
+
+```{r}
+knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$season), FUN = sum), col.names = c("Season", "Sum of Count"))
+```
+
+```{r}
+knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$mnth), FUN = sum), col.names = c("Month", "Sum of Count"))
+```
+
+```{r}
+knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$weathersit), FUN = sum), col.names = c("Weather", "Sum of Count"))
+```
+
+
+The count is higher for the weekdays, rather than the weekends, this suggests that bike sharing may be becoming a popular option for the work commute. Now, we will create some histograms of the remaining predictors vs the reponse. 
+```{r}
+g <- ggplot(bikeDataTrain, aes(x = temp, y = cnt))
+g + geom_jitter() + labs(x = "Normalized Temperature", y = "Count of Total Rental Bikes", title = "Temperature vs. Count")
+```
+
+```{r}
+g <- ggplot(bikeDataTrain, aes(x = atemp, y = cnt))
+g + geom_jitter() + labs(x = "Normalized Feeling Temperature", y = "Count of Total Rental Bikes", title = "Feeling Temperature vs. Count")
+```
+
+```{r}
+g <- ggplot(bikeDataTrain, aes(x = hum, y = cnt))
+g + geom_jitter() + labs(x = "Normalized Humidity", y = "Count of Total Rental Bikes", title = "Humidity vs. Count")
+```
+
+```{r}
+g <- ggplot(bikeDataTrain, aes(x = windspeed, y = cnt))
+g + geom_jitter() + labs(x = "Normalized Wind Speed", y = "Count of Total Rental Bikes", title = "Wind Speed vs. Count")
+```
+
 
 # Models
 

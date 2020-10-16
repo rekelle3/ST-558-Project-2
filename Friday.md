@@ -1,7 +1,5 @@
 Report for One Day of Week
 ================
-Rachel Keller
-October 16, 2020
 
 Introduction
 ============
@@ -16,7 +14,6 @@ description:
 -   season : season (1:winter, 2:spring, 3:summer, 4:fall)
 -   yr : year (0: 2011, 1:2012)
 -   mnth : month ( 1 to 12)
--   hr : hour (0 to 23)
 -   holiday : weather day is holiday or not
 -   weekday : day of the week
 -   workingday : if day is neither weekend nor holiday is 1, otherwise
@@ -41,8 +38,8 @@ parameters for both models will be selected using leave one out cross
 validation. We will fit both of these models on the training data set
 and evaluate the RMSE on the test set.
 
-Set Up and Required Packages
-============================
+Packages
+========
 
 We will load in our necessary packages, `tidyverse` and `caret`. We will
 also set the seed, so our results are reproducible.
@@ -50,6 +47,7 @@ also set the seed, so our results are reproducible.
     set.seed(123)
     library(tidyverse)
     library(caret)
+    library(ggplot2)
 
 Reading in Data
 ===============
@@ -77,6 +75,8 @@ training and test split.
 Summarizations of Data
 ======================
 
+First we will look at the five number summary of each variable.
+
     summary(bikeDataTrain)
 
     ##      season           yr              mnth         holiday       
@@ -101,11 +101,98 @@ Summarizations of Data
     ##  3rd Qu.:0.5999   3rd Qu.:0.6911   3rd Qu.:0.23080   3rd Qu.:5772  
     ##  Max.   :0.7866   Max.   :0.9725   Max.   :0.37811   Max.   :8156
 
-    corrplot::corrplot(cor(bikeDataTrain))
+From this output, we can see that the yr, holiday, and workingday day
+variables are binary. And the season, mnth, and weathersit are
+categorical in nature. So, we will create a contingency table of these
+variables and the count of bikes shared. To do this we will use the
+`aggregate` function in combination with `kable`. First, a table of the
+count and year.
 
-    ## Warning in cor(bikeDataTrain): the standard deviation is zero
+    knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$yr), FUN = sum), col.names = c("Year", "Sum of Count"))
 
-![](Friday_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+| Year | Sum of Count |
+|-----:|-------------:|
+|    0 |       138263 |
+|    1 |       211504 |
+
+We can see that the bike share rented out more bikes in the year 2012,
+than 2011. Secondly, we will look at a table of the count and holiday.
+
+    knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$holiday), FUN = sum), col.names = c("Holiday", "Sum of Count"))
+
+| Holiday | Sum of Count |
+|--------:|-------------:|
+|       0 |       343273 |
+|       1 |         6494 |
+
+As expected, this bike sharing company does more business on
+non-holidays, as there are more of these days in a year than holidays.
+Finally, we will look at the count and working days.
+
+    knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$workingday), FUN = sum), col.names = c("Working Day", "Sum of Count"))
+
+| Working Day | Sum of Count |
+|------------:|-------------:|
+|           0 |         6494 |
+|           1 |       343273 |
+
+    knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$season), FUN = sum), col.names = c("Season", "Sum of Count"))
+
+| Season | Sum of Count |
+|-------:|-------------:|
+|      1 |        51873 |
+|      2 |       106315 |
+|      3 |       103322 |
+|      4 |        88257 |
+
+    knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$mnth), FUN = sum), col.names = c("Month", "Sum of Count"))
+
+| Month | Sum of Count |
+|------:|-------------:|
+|     1 |        16895 |
+|     2 |        18792 |
+|     3 |        18023 |
+|     4 |        34888 |
+|     5 |        37224 |
+|     6 |        36988 |
+|     7 |        28646 |
+|     8 |        43687 |
+|     9 |        35547 |
+|    10 |        21631 |
+|    11 |        34866 |
+|    12 |        22580 |
+
+    knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$weathersit), FUN = sum), col.names = c("Weather", "Sum of Count"))
+
+| Weather | Sum of Count |
+|--------:|-------------:|
+|       1 |       241025 |
+|       2 |       108742 |
+
+The count is higher for the weekdays, rather than the weekends, this
+suggests that bike sharing may be becoming a popular option for the work
+commute. Now, we will create some histograms of the remaining predictors
+vs the reponse.
+
+    g <- ggplot(bikeDataTrain, aes(x = temp, y = cnt))
+    g + geom_jitter() + labs(x = "Normalized Temperature", y = "Count of Total Rental Bikes", title = "Temperature vs. Count")
+
+![](Friday_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+    g <- ggplot(bikeDataTrain, aes(x = atemp, y = cnt))
+    g + geom_jitter() + labs(x = "Normalized Feeling Temperature", y = "Count of Total Rental Bikes", title = "Feeling Temperature vs. Count")
+
+![](Friday_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+    g <- ggplot(bikeDataTrain, aes(x = hum, y = cnt))
+    g + geom_jitter() + labs(x = "Normalized Humidity", y = "Count of Total Rental Bikes", title = "Humidity vs. Count")
+
+![](Friday_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+    g <- ggplot(bikeDataTrain, aes(x = windspeed, y = cnt))
+    g + geom_jitter() + labs(x = "Normalized Wind Speed", y = "Count of Total Rental Bikes", title = "Wind Speed vs. Count")
+
+![](Friday_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 Models
 ======
@@ -190,15 +277,15 @@ default values rather than providing a grid of tuning parameters.
     ## Resampling results across tuning parameters:
     ## 
     ##   n.trees  interaction.depth  RMSE      Rsquared   MAE     
-    ##    50      1                  841.8987  0.7955484  677.7060
-    ##    50      2                  808.2876  0.8019620  630.4096
-    ##    50      3                  805.2417  0.8046772  657.9379
-    ##   100      1                  794.0780  0.8074429  624.4563
-    ##   100      2                  788.5363  0.8088071  603.7076
-    ##   100      3                  793.3285  0.8063178  624.8010
-    ##   150      1                  799.9205  0.8035736  638.0072
-    ##   150      2                  799.4629  0.8038374  623.0734
-    ##   150      3                  797.5099  0.8043348  627.7063
+    ##    50      1                  823.8034  0.8094902  663.9083
+    ##    50      2                  845.5353  0.7821000  671.1285
+    ##    50      3                  834.0544  0.7902792  661.2283
+    ##   100      1                  767.7688  0.8207788  592.2652
+    ##   100      2                  838.6438  0.7837331  651.9762
+    ##   100      3                  805.3054  0.8006929  619.5546
+    ##   150      1                  762.5804  0.8219522  593.4835
+    ##   150      2                  850.6896  0.7779174  654.5292
+    ##   150      3                  827.2102  0.7895710  640.9824
     ## 
     ## Tuning parameter 'shrinkage' was held constant at a value of
     ##  0.1
@@ -206,10 +293,10 @@ default values rather than providing a grid of tuning parameters.
     ##  value of 10
     ## RMSE was used to select the optimal model using the smallest value.
     ## The final values used for the model were n.trees =
-    ##  100, interaction.depth = 2, shrinkage = 0.1 and n.minobsinnode = 10.
+    ##  150, interaction.depth = 1, shrinkage = 0.1 and n.minobsinnode = 10.
 
-The optimal model in this case used n.trees = 100, interaction.depth =
-2, shrinkage = 0.1, and n.minosbinnode = 10. And we can see the training
+The optimal model in this case used n.trees = 150, interaction.depth =
+1, shrinkage = 0.1, and n.minosbinnode = 10. And we can see the training
 RMSE obtained in the output above.
 
 Testing Models on Test Set
@@ -232,6 +319,6 @@ of the boosted tree model.
     (boostedtreeResults <- postResample(boostedtreePred, bikeDataTest$cnt))
 
     ##        RMSE    Rsquared         MAE 
-    ## 932.2518899   0.7869373 705.7539344
+    ## 876.7440803   0.8115759 650.9629388
 
 The optimal model in this case is the boosted tree.
