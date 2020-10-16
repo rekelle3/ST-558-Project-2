@@ -10,8 +10,6 @@ params:
 
 The data we will be analyzing in this project is a daily count of rental bikes between years 2011 and 2012 in the Capital bikeshare system. This bike share data set includes information about the day of rental and the weather on that particular day. Below is a list of the variables that will be available for us to include in our models and a brief description:
 
-* instant: record index
-* dteday : date
 * season : season (1:winter, 2:spring, 3:summer, 4:fall)
 * yr : year (0: 2011, 1:2012)
 * mnth : month ( 1 to 12)
@@ -30,26 +28,48 @@ The data we will be analyzing in this project is a daily count of rental bikes b
 * windspeed: Normalized wind speed
 * cnt: count of total rental bikes
 
+The purpose of this analysis is to compare two models in terms of their predictive performance. As this is a regression problem, we will use RMSE to determine which model is the better fit. The models we will fit are a non-ensemble tree model and a boosted tree model. Tuning parameters for both models will be selected using leave one out cross validation. We will fit both of these models on the training data set and evaluate the RMSE on the test set. 
+
+# Set Up and Required Packages
+
+We will load in our necessary packages, `tidyverse` and `caret`. We will also set the seed, so our results are reproducible. 
 ```{r}
 set.seed(123)
 library(tidyverse)
 library(caret)
 ```
 
-Group B Data:
+# Reading in Data
+
+Using the `read_csv` function, we will read in the csv file of the bike sharing data. With the use of the `select` function, we can remove the casual and registered variables, which should not be used for modeling, and any non-numeric variables, like dteday. Finally, using `filter`, we will filter our data set by the specific day of the week we are interested in analyzing for that report. 
 ```{r, message = FALSE}
 bikeData <- read_csv("day.csv")
-bikeData$dteday <- as.Date(bikeData$dteday, format = "%m/%d/%Y")
-bikeData <- bikeData %>% select(-c(casual, registered)) %>% filter(weekday == params$dayofWeek)
-str(bikeData)
+bikeData <- bikeData %>% select(-c(casual, registered, instant, dteday)) %>% filter(weekday == params$dayofWeek)
 ```
 
+# Creating Training and Test Split
+
+Using `createDataPartition`, we will partition our data into the 70/30 training and test split. 
 ```{r}
 bikeDataIndex <- createDataPartition(bikeData$cnt, p = 0.7, list = FALSE)
 bikeDataTrain <- bikeData[bikeDataIndex, ]
 bikeDataTest <- bikeData[-bikeDataIndex, ]
 ```
 
+# Summarizations of Data
+
+```{r}
+summary(bikeDataTrain)
+corrplot::corrplot(cor(bikeDataTrain))
+```
+
+# Models
+
+Now that we have read in our data, created our split, and done some exploratory data analysis, we will begin fitting our models. The goal is to create two models that predict the cnt variable in our data set. 
+
+## Nonensemble Tree Model
+
+The first model we will fit is a regression tree. The main idea of this model is to split up our predictor space into regions, and for a given region, use the main of the observations as our predictor value. For the fitting process of this model, we will use leave one out cross validation. For LOOCV, one observation is removed and the model is fit on the remaining data, and this fit is used to predict the value of the deleted observation. We repeated this process for each observation and compute the mean square error. The data was also centered and scaled using the `preProcess` function. The final choosen model will be the one that minimzes the training RMSE. For the tuning parameter of cp, we will use the default values rather than providing a grid of tuning parameters. 
 ```{r, warning=FALSE}
 (treeFit <- train(cnt ~ ., data = bikeDataTrain,
                method = "rpart",
@@ -57,6 +77,11 @@ bikeDataTest <- bikeData[-bikeDataIndex, ]
                trControl = trainControl(method = "LOOCV")))
 ```
 
+The optimal model in this case used cp = `r treeFit$bestTune`. And we can see the training RMSE obtained in the output above. 
+
+## Boosted Tree Model 
+
+The final model we will fit is a boosted tree. This model builds off of the previous in that we are sequentially fitting tree models. Each subsequent tree is grown on a modified version of the training data, and we update our predictions as the tree grows. For the fitting process of this model, we will use leave one out cross validation. For LOOCV, one observation is removed and the model is fit on the remaining data, and this fit is used to predict the value of the deleted observation. We repeated this process for each observation and compute the mean square error. The data was also centered and scaled using the `preProcess` function. The final choosen model will be the one that minimzes the training RMSE. For the tuning parameters of number of trees, depth, shrinkage, and minimum number of observations in a node, we will use the default values rather than providing a grid of tuning parameters.
 ```{r, warning=FALSE}
 (boostedtreeFit <- train(cnt ~ ., data = bikeDataTrain,
                method = "gbm",
@@ -65,12 +90,20 @@ bikeDataTest <- bikeData[-bikeDataIndex, ]
                verbose = FALSE))
 ```
 
+The optimal model in this case used n.trees = `r boostedtreeFit$bestTune[, 1]`, interaction.depth = `r boostedtreeFit$bestTune[, 2]`, shrinkage = `r boostedtreeFit$bestTune[, 3]`, and n.minosbinnode = `r boostedtreeFit$bestTune[, 4]`. And we can see the training RMSE obtained in the output above. 
+
+# Testing Models on Test Set
+
+Now that we have determined the optimal fit of each model, we will apply our models to the test set. First, we will obtain the test RMSE of the tree model using `predict` and `postResample`. 
 ```{r}
 treePred <- predict(treeFit, newdata = bikeDataTest)
-postResample(treePred, bikeDataTest$cnt)
+(treeResults <- postResample(treePred, bikeDataTest$cnt))
 ```
 
+Again, we will use `predict` and `postResample` to obtain the test RMSE of the boosted tree model. 
 ```{r}
 boostedtreePred <- predict(boostedtreeFit, newdata = bikeDataTest)
-postResample(boostedtreePred, bikeDataTest$cnt)
+(boostedtreeResults <- postResample(boostedtreePred, bikeDataTest$cnt))
 ```
+
+The optimal model in this case is `r ifelse(treeResults[1] < boostedtreeResults[1], "the non-ensemble tree", "the boosted tree")`. 

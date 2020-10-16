@@ -13,8 +13,6 @@ weather on that particular day. Below is a list of the variables that
 will be available for us to include in our models and a brief
 description:
 
--   instant: record index
--   dteday : date
 -   season : season (1:winter, 2:spring, 3:summer, 4:fall)
 -   yr : year (0: 2011, 1:2012)
 -   mnth : month ( 1 to 12)
@@ -35,38 +33,102 @@ description:
 -   windspeed: Normalized wind speed
 -   cnt: count of total rental bikes
 
-<!-- -->
+The purpose of this analysis is to compare two models in terms of their
+predictive performance. As this is a regression problem, we will use
+RMSE to determine which model is the better fit. The models we will fit
+are a non-ensemble tree model and a boosted tree model. Tuning
+parameters for both models will be selected using leave one out cross
+validation. We will fit both of these models on the training data set
+and evaluate the RMSE on the test set.
+
+Set Up and Required Packages
+============================
+
+We will load in our necessary packages, `tidyverse` and `caret`. We will
+also set the seed, so our results are reproducible.
 
     set.seed(123)
     library(tidyverse)
     library(caret)
 
-Group B Data:
+Reading in Data
+===============
+
+Using the `read_csv` function, we will read in the csv file of the bike
+sharing data. With the use of the `select` function, we can remove the
+casual and registered variables, which should not be used for modeling,
+and any non-numeric variables, like dteday. Finally, using `filter`, we
+will filter our data set by the specific day of the week we are
+interested in analyzing for that report.
 
     bikeData <- read_csv("day.csv")
-    bikeData$dteday <- as.Date(bikeData$dteday, format = "%m/%d/%Y")
-    bikeData <- bikeData %>% select(-c(casual, registered)) %>% filter(weekday == params$dayofWeek)
-    str(bikeData)
+    bikeData <- bikeData %>% select(-c(casual, registered, instant, dteday)) %>% filter(weekday == params$dayofWeek)
 
-    ## Classes 'tbl_df', 'tbl' and 'data.frame':    105 obs. of  14 variables:
-    ##  $ instant   : num  1 8 15 22 29 36 43 50 57 64 ...
-    ##  $ dteday    : Date, format: "2011-01-01" ...
-    ##  $ season    : num  1 1 1 1 1 1 1 1 1 1 ...
-    ##  $ yr        : num  0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ mnth      : num  1 1 1 1 1 2 2 2 2 3 ...
-    ##  $ holiday   : num  0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ weekday   : num  6 6 6 6 6 6 6 6 6 6 ...
-    ##  $ workingday: num  0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ weathersit: num  2 2 2 1 1 2 1 1 1 2 ...
-    ##  $ temp      : num  0.3442 0.165 0.2333 0.0591 0.1965 ...
-    ##  $ atemp     : num  0.3636 0.1623 0.2481 0.0791 0.2121 ...
-    ##  $ hum       : num  0.806 0.536 0.499 0.4 0.652 ...
-    ##  $ windspeed : num  0.16 0.267 0.158 0.172 0.145 ...
-    ##  $ cnt       : num  985 959 1248 981 1098 ...
+Creating Training and Test Split
+================================
+
+Using `createDataPartition`, we will partition our data into the 70/30
+training and test split.
 
     bikeDataIndex <- createDataPartition(bikeData$cnt, p = 0.7, list = FALSE)
     bikeDataTrain <- bikeData[bikeDataIndex, ]
     bikeDataTest <- bikeData[-bikeDataIndex, ]
+
+Summarizations of Data
+======================
+
+    summary(bikeDataTrain)
+
+    ##      season            yr           mnth           holiday 
+    ##  Min.   :1.000   Min.   :0.0   Min.   : 1.000   Min.   :0  
+    ##  1st Qu.:2.000   1st Qu.:0.0   1st Qu.: 4.000   1st Qu.:0  
+    ##  Median :3.000   Median :0.5   Median : 7.000   Median :0  
+    ##  Mean   :2.579   Mean   :0.5   Mean   : 6.882   Mean   :0  
+    ##  3rd Qu.:4.000   3rd Qu.:1.0   3rd Qu.:10.000   3rd Qu.:0  
+    ##  Max.   :4.000   Max.   :1.0   Max.   :12.000   Max.   :0  
+    ##     weekday    workingday   weathersit         temp       
+    ##  Min.   :6   Min.   :0    Min.   :1.000   Min.   :0.1965  
+    ##  1st Qu.:6   1st Qu.:0    1st Qu.:1.000   1st Qu.:0.3263  
+    ##  Median :6   Median :0    Median :1.000   Median :0.4275  
+    ##  Mean   :6   Mean   :0    Mean   :1.355   Mean   :0.4843  
+    ##  3rd Qu.:6   3rd Qu.:0    3rd Qu.:2.000   3rd Qu.:0.6594  
+    ##  Max.   :6   Max.   :0    Max.   :3.000   Max.   :0.8617  
+    ##      atemp             hum           windspeed           cnt      
+    ##  Min.   :0.2109   Min.   :0.1879   Min.   :0.0454   Min.   : 627  
+    ##  1st Qu.:0.3254   1st Qu.:0.5163   1st Qu.:0.1535   1st Qu.:2737  
+    ##  Median :0.4255   Median :0.6131   Median :0.1906   Median :4618  
+    ##  Mean   :0.4641   Mean   :0.6127   Mean   :0.2008   Mean   :4526  
+    ##  3rd Qu.:0.6114   3rd Qu.:0.7224   3rd Qu.:0.2352   3rd Qu.:6164  
+    ##  Max.   :0.8049   Max.   :0.9113   Max.   :0.5075   Max.   :8555
+
+    corrplot::corrplot(cor(bikeDataTrain))
+
+    ## Warning in cor(bikeDataTrain): the standard deviation is zero
+
+![](Saturday_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+Models
+======
+
+Now that we have read in our data, created our split, and done some
+exploratory data analysis, we will begin fitting our models. The goal is
+to create two models that predict the cnt variable in our data set.
+
+Nonensemble Tree Model
+----------------------
+
+The first model we will fit is a regression tree. The main idea of this
+model is to split up our predictor space into regions, and for a given
+region, use the main of the observations as our predictor value. For the
+fitting process of this model, we will use leave one out cross
+validation. For LOOCV, one observation is removed and the model is fit
+on the remaining data, and this fit is used to predict the value of the
+deleted observation. We repeated this process for each observation and
+compute the mean square error. The data was also centered and scaled
+using the `preProcess` function. The final choosen model will be the one
+that minimzes the training RMSE. For the tuning parameter of cp, we will
+use the default values rather than providing a grid of tuning
+parameters.
 
     (treeFit <- train(cnt ~ ., data = bikeDataTrain,
                    method = "rpart",
@@ -76,20 +138,40 @@ Group B Data:
     ## CART 
     ## 
     ## 76 samples
-    ## 13 predictors
+    ## 11 predictors
     ## 
-    ## Pre-processing: centered (13), scaled (13) 
+    ## Pre-processing: centered (11), scaled (11) 
     ## Resampling: Leave-One-Out Cross-Validation 
     ## Summary of sample sizes: 75, 75, 75, 75, 75, 75, ... 
     ## Resampling results across tuning parameters:
     ## 
-    ##   cp          RMSE      Rsquared    MAE     
-    ##   0.09823505  1576.022  0.46060895  1181.957
-    ##   0.11302116  1725.369  0.34741871  1435.077
-    ##   0.48923131  2340.837  0.01289611  2110.674
+    ##   cp         RMSE      Rsquared    MAE     
+    ##   0.1102965  1745.620  0.33710882  1398.428
+    ##   0.1329417  1799.992  0.28433522  1491.564
+    ##   0.4042212  2411.068  0.03594702  2150.075
     ## 
     ## RMSE was used to select the optimal model using the smallest value.
-    ## The final value used for the model was cp = 0.09823505.
+    ## The final value used for the model was cp = 0.1102965.
+
+The optimal model in this case used cp = 0.1102965. And we can see the
+training RMSE obtained in the output above.
+
+Boosted Tree Model
+------------------
+
+The final model we will fit is a boosted tree. This model builds off of
+the previous in that we are sequentially fitting tree models. Each
+subsequent tree is grown on a modified version of the training data, and
+we update our predictions as the tree grows. For the fitting process of
+this model, we will use leave one out cross validation. For LOOCV, one
+observation is removed and the model is fit on the remaining data, and
+this fit is used to predict the value of the deleted observation. We
+repeated this process for each observation and compute the mean square
+error. The data was also centered and scaled using the `preProcess`
+function. The final choosen model will be the one that minimzes the
+training RMSE. For the tuning parameters of number of trees, depth,
+shrinkage, and minimum number of observations in a node, we will use the
+default values rather than providing a grid of tuning parameters.
 
     (boostedtreeFit <- train(cnt ~ ., data = bikeDataTrain,
                    method = "gbm",
@@ -100,23 +182,23 @@ Group B Data:
     ## Stochastic Gradient Boosting 
     ## 
     ## 76 samples
-    ## 13 predictors
+    ## 11 predictors
     ## 
-    ## Pre-processing: centered (13), scaled (13) 
+    ## Pre-processing: centered (11), scaled (11) 
     ## Resampling: Leave-One-Out Cross-Validation 
     ## Summary of sample sizes: 75, 75, 75, 75, 75, 75, ... 
     ## Resampling results across tuning parameters:
     ## 
-    ##   n.trees  interaction.depth  RMSE      Rsquared   MAE     
-    ##    50      1                  1172.603  0.6879080  891.8230
-    ##    50      2                  1201.157  0.6717403  916.8839
-    ##    50      3                  1170.587  0.6878699  892.6119
-    ##   100      1                  1088.637  0.7307805  816.8383
-    ##   100      2                  1124.139  0.7128618  827.2629
-    ##   100      3                  1150.298  0.6997890  865.0765
-    ##   150      1                  1083.090  0.7340960  811.6813
-    ##   150      2                  1094.093  0.7280542  806.6958
-    ##   150      3                  1130.677  0.7104266  844.6742
+    ##   n.trees  interaction.depth  RMSE       Rsquared   MAE     
+    ##    50      1                  1139.3083  0.7169845  831.7114
+    ##    50      2                  1087.2811  0.7373202  806.1361
+    ##    50      3                  1029.7208  0.7641376  774.9721
+    ##   100      1                  1021.6938  0.7657434  728.4462
+    ##   100      2                  1016.6023  0.7659612  735.5841
+    ##   100      3                   998.6517  0.7733494  743.5509
+    ##   150      1                  1011.4273  0.7679132  734.8389
+    ##   150      2                  1000.4151  0.7726994  719.1903
+    ##   150      3                   986.2261  0.7787316  732.9199
     ## 
     ## Tuning parameter 'shrinkage' was held constant at a value of
     ##  0.1
@@ -124,16 +206,32 @@ Group B Data:
     ##  value of 10
     ## RMSE was used to select the optimal model using the smallest value.
     ## The final values used for the model were n.trees =
-    ##  150, interaction.depth = 1, shrinkage = 0.1 and n.minobsinnode = 10.
+    ##  150, interaction.depth = 3, shrinkage = 0.1 and n.minobsinnode = 10.
+
+The optimal model in this case used n.trees = 150, interaction.depth =
+3, shrinkage = 0.1, and n.minosbinnode = 10. And we can see the training
+RMSE obtained in the output above.
+
+Testing Models on Test Set
+==========================
+
+Now that we have determined the optimal fit of each model, we will apply
+our models to the test set. First, we will obtain the test RMSE of the
+tree model using `predict` and `postResample`.
 
     treePred <- predict(treeFit, newdata = bikeDataTest)
-    postResample(treePred, bikeDataTest$cnt)
+    (treeResults <- postResample(treePred, bikeDataTest$cnt))
 
     ##         RMSE     Rsquared          MAE 
-    ## 1660.2836903    0.5541093 1355.5553123
+    ## 1391.1354081    0.7366505 1217.6198055
+
+Again, we will use `predict` and `postResample` to obtain the test RMSE
+of the boosted tree model.
 
     boostedtreePred <- predict(boostedtreeFit, newdata = bikeDataTest)
-    postResample(boostedtreePred, bikeDataTest$cnt)
+    (boostedtreeResults <- postResample(boostedtreePred, bikeDataTest$cnt))
 
-    ##         RMSE     Rsquared          MAE 
-    ## 1034.5879500    0.8239436  813.9348449
+    ##       RMSE   Rsquared        MAE 
+    ## 912.269138   0.863004 738.832799
+
+The optimal model in this case is the boosted tree.
