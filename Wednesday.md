@@ -79,27 +79,48 @@ First we will look at the five number summary of each variable.
 
     summary(bikeDataTrain)
 
-    ##      season            yr              mnth          holiday       
-    ##  Min.   :1.000   Min.   :0.0000   Min.   : 1.00   Min.   :0.00000  
-    ##  1st Qu.:2.000   1st Qu.:0.0000   1st Qu.: 3.75   1st Qu.:0.00000  
-    ##  Median :3.000   Median :0.0000   Median : 7.00   Median :0.00000  
-    ##  Mean   :2.539   Mean   :0.4737   Mean   : 6.50   Mean   :0.01316  
-    ##  3rd Qu.:3.000   3rd Qu.:1.0000   3rd Qu.: 9.00   3rd Qu.:0.00000  
-    ##  Max.   :4.000   Max.   :1.0000   Max.   :12.00   Max.   :1.00000  
-    ##     weekday    workingday       weathersit         temp       
-    ##  Min.   :3   Min.   :0.0000   Min.   :1.000   Min.   :0.1075  
-    ##  1st Qu.:3   1st Qu.:1.0000   1st Qu.:1.000   1st Qu.:0.3486  
-    ##  Median :3   Median :1.0000   Median :1.000   Median :0.5400  
-    ##  Mean   :3   Mean   :0.9868   Mean   :1.447   Mean   :0.5181  
-    ##  3rd Qu.:3   3rd Qu.:1.0000   3rd Qu.:2.000   3rd Qu.:0.6690  
-    ##  Max.   :3   Max.   :1.0000   Max.   :3.000   Max.   :0.7933  
-    ##      atemp             hum           windspeed            cnt      
-    ##  Min.   :0.1193   Min.   :0.4029   Min.   :0.06096   Min.   : 705  
-    ##  1st Qu.:0.3508   1st Qu.:0.5640   1st Qu.:0.12904   1st Qu.:2653  
-    ##  Median :0.5205   Median :0.6415   Median :0.16884   Median :4642  
-    ##  Mean   :0.4938   Mean   :0.6547   Mean   :0.18297   Mean   :4534  
-    ##  3rd Qu.:0.6231   3rd Qu.:0.7476   3rd Qu.:0.23431   3rd Qu.:5846  
-    ##  Max.   :0.7469   Max.   :0.9704   Max.   :0.41543   Max.   :8173
+    ##      season            yr        
+    ##  Min.   :1.000   Min.   :0.0000  
+    ##  1st Qu.:2.000   1st Qu.:0.0000  
+    ##  Median :3.000   Median :0.0000  
+    ##  Mean   :2.539   Mean   :0.4737  
+    ##  3rd Qu.:3.000   3rd Qu.:1.0000  
+    ##  Max.   :4.000   Max.   :1.0000  
+    ##       mnth          holiday           weekday 
+    ##  Min.   : 1.00   Min.   :0.00000   Min.   :3  
+    ##  1st Qu.: 3.75   1st Qu.:0.00000   1st Qu.:3  
+    ##  Median : 7.00   Median :0.00000   Median :3  
+    ##  Mean   : 6.50   Mean   :0.01316   Mean   :3  
+    ##  3rd Qu.: 9.00   3rd Qu.:0.00000   3rd Qu.:3  
+    ##  Max.   :12.00   Max.   :1.00000   Max.   :3  
+    ##    workingday       weathersit   
+    ##  Min.   :0.0000   Min.   :1.000  
+    ##  1st Qu.:1.0000   1st Qu.:1.000  
+    ##  Median :1.0000   Median :1.000  
+    ##  Mean   :0.9868   Mean   :1.447  
+    ##  3rd Qu.:1.0000   3rd Qu.:2.000  
+    ##  Max.   :1.0000   Max.   :3.000  
+    ##       temp            atemp       
+    ##  Min.   :0.1075   Min.   :0.1193  
+    ##  1st Qu.:0.3486   1st Qu.:0.3508  
+    ##  Median :0.5400   Median :0.5205  
+    ##  Mean   :0.5181   Mean   :0.4938  
+    ##  3rd Qu.:0.6690   3rd Qu.:0.6231  
+    ##  Max.   :0.7933   Max.   :0.7469  
+    ##       hum           windspeed      
+    ##  Min.   :0.4029   Min.   :0.06096  
+    ##  1st Qu.:0.5640   1st Qu.:0.12904  
+    ##  Median :0.6415   Median :0.16884  
+    ##  Mean   :0.6547   Mean   :0.18297  
+    ##  3rd Qu.:0.7476   3rd Qu.:0.23431  
+    ##  Max.   :0.9704   Max.   :0.41543  
+    ##       cnt      
+    ##  Min.   : 705  
+    ##  1st Qu.:2653  
+    ##  Median :4642  
+    ##  Mean   :4534  
+    ##  3rd Qu.:5846  
+    ##  Max.   :8173
 
 From this output, we can see that the yr, holiday, and workingday day
 variables are binary. And the season, mnth, and weathersit are
@@ -238,8 +259,10 @@ parameters.
     ##   0.2437851  1727.282  0.26296344  1496.171
     ##   0.4198293  2321.965  0.03985709  2120.212
     ## 
-    ## RMSE was used to select the optimal model using the smallest value.
-    ## The final value used for the model was cp = 0.1007572.
+    ## RMSE was used to select the optimal model
+    ##  using the smallest value.
+    ## The final value used for the model was cp
+    ##  = 0.1007572.
 
 The optimal model in this case used cp = 0.1007572. And we can see the
 training RMSE obtained in the output above.
@@ -277,24 +300,35 @@ default values rather than providing a grid of tuning parameters.
     ## Summary of sample sizes: 75, 75, 75, 75, 75, 75, ... 
     ## Resampling results across tuning parameters:
     ## 
-    ##   n.trees  interaction.depth  RMSE      Rsquared   MAE     
-    ##    50      1                  824.6910  0.8327558  677.2048
-    ##    50      2                  803.3248  0.8347791  627.1262
-    ##    50      3                  793.8117  0.8388975  628.4350
-    ##   100      1                  787.9491  0.8399662  631.5658
-    ##   100      2                  786.7612  0.8396948  591.1651
-    ##   100      3                  765.5318  0.8480149  592.8788
-    ##   150      1                  781.5864  0.8419288  622.9730
-    ##   150      2                  775.7448  0.8438733  579.4465
-    ##   150      3                  764.3502  0.8485906  586.3314
+    ##   n.trees  interaction.depth  RMSE    
+    ##    50      1                  824.6910
+    ##    50      2                  803.3248
+    ##    50      3                  793.8117
+    ##   100      1                  787.9491
+    ##   100      2                  786.7612
+    ##   100      3                  765.5318
+    ##   150      1                  781.5864
+    ##   150      2                  775.7448
+    ##   150      3                  764.3502
+    ##   Rsquared   MAE     
+    ##   0.8327558  677.2048
+    ##   0.8347791  627.1262
+    ##   0.8388975  628.4350
+    ##   0.8399662  631.5658
+    ##   0.8396948  591.1651
+    ##   0.8480149  592.8788
+    ##   0.8419288  622.9730
+    ##   0.8438733  579.4465
+    ##   0.8485906  586.3314
     ## 
-    ## Tuning parameter 'shrinkage' was held constant at a value of
-    ##  0.1
-    ## Tuning parameter 'n.minobsinnode' was held constant at a
-    ##  value of 10
-    ## RMSE was used to select the optimal model using the smallest value.
-    ## The final values used for the model were n.trees =
-    ##  150, interaction.depth = 3, shrinkage = 0.1 and n.minobsinnode = 10.
+    ## Tuning parameter 'shrinkage' was held
+    ##  parameter 'n.minobsinnode' was held
+    ##  constant at a value of 10
+    ## RMSE was used to select the optimal model
+    ##  using the smallest value.
+    ## The final values used for the model
+    ##  were n.trees = 150, interaction.depth =
+    ##  3, shrinkage = 0.1 and n.minobsinnode = 10.
 
 The optimal model in this case used n.trees = 150, interaction.depth =
 3, shrinkage = 0.1, and n.minosbinnode = 10. And we can see the training

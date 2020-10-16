@@ -79,27 +79,41 @@ First we will look at the five number summary of each variable.
 
     summary(bikeDataTrain)
 
-    ##      season            yr              mnth           holiday 
-    ##  Min.   :1.000   Min.   :0.0000   Min.   : 1.000   Min.   :0  
-    ##  1st Qu.:2.000   1st Qu.:0.0000   1st Qu.: 4.000   1st Qu.:0  
-    ##  Median :3.000   Median :1.0000   Median : 7.000   Median :0  
-    ##  Mean   :2.539   Mean   :0.5132   Mean   : 6.605   Mean   :0  
-    ##  3rd Qu.:4.000   3rd Qu.:1.0000   3rd Qu.: 9.250   3rd Qu.:0  
-    ##  Max.   :4.000   Max.   :1.0000   Max.   :12.000   Max.   :0  
-    ##     weekday    workingday   weathersit         temp       
-    ##  Min.   :0   Min.   :0    Min.   :1.000   Min.   :0.1667  
-    ##  1st Qu.:0   1st Qu.:0    1st Qu.:1.000   1st Qu.:0.3412  
-    ##  Median :0   Median :0    Median :1.000   Median :0.4612  
-    ##  Mean   :0   Mean   :0    Mean   :1.342   Mean   :0.4829  
-    ##  3rd Qu.:0   3rd Qu.:0    3rd Qu.:2.000   3rd Qu.:0.6390  
-    ##  Max.   :0   Max.   :0    Max.   :3.000   Max.   :0.8058  
-    ##      atemp             hum           windspeed            cnt      
-    ##  Min.   :0.1616   Min.   :0.2758   Min.   :0.05038   Min.   : 605  
-    ##  1st Qu.:0.3441   1st Qu.:0.5095   1st Qu.:0.13309   1st Qu.:2940  
-    ##  Median :0.4561   Median :0.6629   Median :0.17755   Median :4358  
-    ##  Mean   :0.4651   Mean   :0.6340   Mean   :0.18563   Mean   :4309  
-    ##  3rd Qu.:0.5979   3rd Qu.:0.7359   3rd Qu.:0.22575   3rd Qu.:5571  
-    ##  Max.   :0.7311   Max.   :0.9483   Max.   :0.39801   Max.   :8227
+    ##      season            yr        
+    ##  Min.   :1.000   Min.   :0.0000  
+    ##  1st Qu.:2.000   1st Qu.:0.0000  
+    ##  Median :3.000   Median :1.0000  
+    ##  Mean   :2.539   Mean   :0.5132  
+    ##  3rd Qu.:4.000   3rd Qu.:1.0000  
+    ##  Max.   :4.000   Max.   :1.0000  
+    ##       mnth           holiday     weekday 
+    ##  Min.   : 1.000   Min.   :0   Min.   :0  
+    ##  1st Qu.: 4.000   1st Qu.:0   1st Qu.:0  
+    ##  Median : 7.000   Median :0   Median :0  
+    ##  Mean   : 6.605   Mean   :0   Mean   :0  
+    ##  3rd Qu.: 9.250   3rd Qu.:0   3rd Qu.:0  
+    ##  Max.   :12.000   Max.   :0   Max.   :0  
+    ##    workingday   weathersit         temp       
+    ##  Min.   :0    Min.   :1.000   Min.   :0.1667  
+    ##  1st Qu.:0    1st Qu.:1.000   1st Qu.:0.3412  
+    ##  Median :0    Median :1.000   Median :0.4612  
+    ##  Mean   :0    Mean   :1.342   Mean   :0.4829  
+    ##  3rd Qu.:0    3rd Qu.:2.000   3rd Qu.:0.6390  
+    ##  Max.   :0    Max.   :3.000   Max.   :0.8058  
+    ##      atemp             hum        
+    ##  Min.   :0.1616   Min.   :0.2758  
+    ##  1st Qu.:0.3441   1st Qu.:0.5095  
+    ##  Median :0.4561   Median :0.6629  
+    ##  Mean   :0.4651   Mean   :0.6340  
+    ##  3rd Qu.:0.5979   3rd Qu.:0.7359  
+    ##  Max.   :0.7311   Max.   :0.9483  
+    ##    windspeed            cnt      
+    ##  Min.   :0.05038   Min.   : 605  
+    ##  1st Qu.:0.13309   1st Qu.:2940  
+    ##  Median :0.17755   Median :4358  
+    ##  Mean   :0.18563   Mean   :4309  
+    ##  3rd Qu.:0.22575   3rd Qu.:5571  
+    ##  Max.   :0.39801   Max.   :8227
 
 From this output, we can see that the yr, holiday, and workingday day
 variables are binary. And the season, mnth, and weathersit are
@@ -176,22 +190,22 @@ vs the reponse.
     g <- ggplot(bikeDataTrain, aes(x = temp, y = cnt))
     g + geom_jitter() + labs(x = "Normalized Temperature", y = "Count of Total Rental Bikes", title = "Temperature vs. Count")
 
-![](Sunday_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
+![](Sunday_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
     g <- ggplot(bikeDataTrain, aes(x = atemp, y = cnt))
     g + geom_jitter() + labs(x = "Normalized Feeling Temperature", y = "Count of Total Rental Bikes", title = "Feeling Temperature vs. Count")
 
-![](Sunday_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
+![](Sunday_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
     g <- ggplot(bikeDataTrain, aes(x = hum, y = cnt))
     g + geom_jitter() + labs(x = "Normalized Humidity", y = "Count of Total Rental Bikes", title = "Humidity vs. Count")
 
-![](Sunday_files/figure-gfm/unnamed-chunk-38-1.png)<!-- -->
+![](Sunday_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
     g <- ggplot(bikeDataTrain, aes(x = windspeed, y = cnt))
     g + geom_jitter() + labs(x = "Normalized Wind Speed", y = "Count of Total Rental Bikes", title = "Wind Speed vs. Count")
 
-![](Sunday_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
+![](Sunday_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 Models
 ======
@@ -236,8 +250,10 @@ parameters.
     ##   0.19759413  1427.802  0.43238556  1226.4758
     ##   0.55472332  1965.865  0.01058233  1784.7007
     ## 
-    ## RMSE was used to select the optimal model using the smallest value.
-    ## The final value used for the model was cp = 0.04033305.
+    ## RMSE was used to select the optimal model
+    ##  using the smallest value.
+    ## The final value used for the model was cp
+    ##  = 0.04033305.
 
 The optimal model in this case used cp = 0.040333. And we can see the
 training RMSE obtained in the output above.
@@ -275,24 +291,35 @@ default values rather than providing a grid of tuning parameters.
     ## Summary of sample sizes: 75, 75, 75, 75, 75, 75, ... 
     ## Resampling results across tuning parameters:
     ## 
-    ##   n.trees  interaction.depth  RMSE      Rsquared   MAE     
-    ##    50      1                  920.1846  0.7612359  732.3073
-    ##    50      2                  876.4758  0.7783891  698.1969
-    ##    50      3                  881.6316  0.7753884  719.2342
-    ##   100      1                  868.4899  0.7818925  686.6267
-    ##   100      2                  840.7523  0.7951453  670.8954
-    ##   100      3                  880.3726  0.7757209  697.1818
-    ##   150      1                  843.4098  0.7939069  675.6483
-    ##   150      2                  851.1420  0.7901427  676.4245
-    ##   150      3                  842.0850  0.7949724  655.8386
+    ##   n.trees  interaction.depth  RMSE    
+    ##    50      1                  920.1846
+    ##    50      2                  876.4758
+    ##    50      3                  881.6316
+    ##   100      1                  868.4899
+    ##   100      2                  840.7523
+    ##   100      3                  880.3726
+    ##   150      1                  843.4098
+    ##   150      2                  851.1420
+    ##   150      3                  842.0850
+    ##   Rsquared   MAE     
+    ##   0.7612359  732.3073
+    ##   0.7783891  698.1969
+    ##   0.7753884  719.2342
+    ##   0.7818925  686.6267
+    ##   0.7951453  670.8954
+    ##   0.7757209  697.1818
+    ##   0.7939069  675.6483
+    ##   0.7901427  676.4245
+    ##   0.7949724  655.8386
     ## 
-    ## Tuning parameter 'shrinkage' was held constant at a value of
-    ##  0.1
-    ## Tuning parameter 'n.minobsinnode' was held constant at a
-    ##  value of 10
-    ## RMSE was used to select the optimal model using the smallest value.
-    ## The final values used for the model were n.trees =
-    ##  100, interaction.depth = 2, shrinkage = 0.1 and n.minobsinnode = 10.
+    ## Tuning parameter 'shrinkage' was held
+    ##  parameter 'n.minobsinnode' was held
+    ##  constant at a value of 10
+    ## RMSE was used to select the optimal model
+    ##  using the smallest value.
+    ## The final values used for the model
+    ##  were n.trees = 100, interaction.depth =
+    ##  2, shrinkage = 0.1 and n.minobsinnode = 10.
 
 The optimal model in this case used n.trees = 100, interaction.depth =
 2, shrinkage = 0.1, and n.minosbinnode = 10. And we can see the training
