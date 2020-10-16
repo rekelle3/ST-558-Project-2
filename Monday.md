@@ -1,5 +1,3 @@
-Report for One Day of Week
-================
 
 Introduction
 ============
@@ -11,24 +9,24 @@ weather on that particular day. Below is a list of the variables that
 will be available for us to include in our models and a brief
 description:
 
--   season : season (1:winter, 2:spring, 3:summer, 4:fall)
--   yr : year (0: 2011, 1:2012)
--   mnth : month ( 1 to 12)
--   holiday : weather day is holiday or not
--   weekday : day of the week
--   workingday : if day is neither weekend nor holiday is 1, otherwise
+-   `season` : season (1:winter, 2:spring, 3:summer, 4:fall)
+-   `yr` : year (0: 2011, 1:2012)
+-   `mnth` : month ( 1 to 12)
+-   `holiday` : weather day is holiday or not
+-   `weekday` : day of the week
+-   `workingday` : if day is neither weekend nor holiday is 1, otherwise
     is 0
--   weathersit :
+-   `weathersit` :
     -   1: Clear, Few clouds, Partly cloudy, Partly cloudy
     -   2: Mist + Cloudy, Mist + Broken clouds, Mist + Few clouds, Mist
     -   3: Light Snow, Light Rain + Thunderstorm + Scattered clouds,
         Light Rain + Scattered clouds
     -   4: Heavy Rain + Ice Pallets + Thunderstorm + Mist, Snow + Fog
--   temp : Normalized temperature in Celsius
--   atemp: Normalized feeling temperature in Celsius
--   hum: Normalized humidity
--   windspeed: Normalized wind speed
--   cnt: count of total rental bikes
+-   `temp` : Normalized temperature in Celsius
+-   `atemp`: Normalized feeling temperature in Celsius
+-   `hum`: Normalized humidity
+-   `windspeed`: Normalized wind speed
+-   `cnt`: count of total rental bikes
 
 The purpose of this analysis is to compare two models in terms of their
 predictive performance. As this is a regression problem, we will use
@@ -38,8 +36,8 @@ parameters for both models will be selected using leave one out cross
 validation. We will fit both of these models on the training data set
 and evaluate the RMSE on the test set.
 
-Packages
-========
+Loading Packages
+================
 
 We will load in our necessary packages, `tidyverse` and `caret`. We will
 also set the seed, so our results are reproducible.
@@ -54,10 +52,10 @@ Reading in Data
 
 Using the `read_csv` function, we will read in the csv file of the bike
 sharing data. With the use of the `select` function, we can remove the
-casual and registered variables, which should not be used for modeling,
-and any non-numeric variables, like dteday. Finally, using `filter`, we
-will filter our data set by the specific day of the week we are
-interested in analyzing for that report.
+`casual` and `registered` variables, which should not be used for
+modeling, and any non-numeric variables, like `dteday`. Finally, using
+`filter`, we will filter our data set by the specific day of the week we
+are interested in analyzing for that report.
 
     bikeData <- read_csv("day.csv")
     bikeData <- bikeData %>% select(-c(casual, registered, instant, dteday)) %>% filter(weekday == params$dayofWeek)
@@ -75,7 +73,8 @@ training and test split.
 Summarizations of Data
 ======================
 
-First we will look at the five number summary of each variable.
+First, we will take a look at the five number summary of each variable
+available in the data set.
 
     summary(bikeDataTrain)
 
@@ -122,12 +121,13 @@ First we will look at the five number summary of each variable.
     ##  3rd Qu.:5890  
     ##  Max.   :7525
 
-From this output, we can see that the yr, holiday, and workingday day
-variables are binary. And the season, mnth, and weathersit are
-categorical in nature. So, we will create a contingency table of these
-variables and the count of bikes shared. To do this we will use the
-`aggregate` function in combination with `kable`. First, a table of the
-count and year.
+From this output, we can see that the `yr`, `holiday`, and `workingday`
+variables are binary, that is they take on values of 0 or 1. Also, the
+`season`, `mnth`, and `weathersit` variables are categorical. We will
+create contingency tables of these non-numeric variables and the count
+of bikes shared. To create these tables, we will use the `aggregate`
+function in combination with `kable`. First, we will create the table of
+`year` and `cnt`.
 
     knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$yr), FUN = sum), col.names = c("Year", "Sum of Count"))
 
@@ -136,8 +136,10 @@ count and year.
 |    0 |       128847 |
 |    1 |       205105 |
 
-We can see that the bike share rented out more bikes in the year 2012,
-than 2011. Secondly, we will look at a table of the count and holiday.
+From the table, we can see that the bike share rented out more bikes in
+the year 2012, suggesting that the bike sharing company had better
+performance in the year 2012. Secondly, we will look at a table of the
+`holiday` and `cnt`.
 
     knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$holiday), FUN = sum), col.names = c("Holiday", "Sum of Count"))
 
@@ -147,8 +149,9 @@ than 2011. Secondly, we will look at a table of the count and holiday.
 |       1 |        40301 |
 
 As expected, this bike sharing company does more business on
-non-holidays, as there are more of these days in a year than holidays.
-Finally, we will look at the count and working days.
+non-holidays. This makes logical sense as there are more of these days
+in a year than holidays. Next, we will look at the table of
+`workingdays` and `cnt`.
 
     knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$workingday), FUN = sum), col.names = c("Working Day", "Sum of Count"))
 
@@ -156,6 +159,11 @@ Finally, we will look at the count and working days.
 |------------:|-------------:|
 |           0 |        40301 |
 |           1 |       293651 |
+
+From the table, we can see that the count is higher for the weekdays,
+rather than the weekends, this suggests that bike sharing may be
+becoming a popular option for the work commute. The next table we will
+create is of `season` and `cnt`.
 
     knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$season), FUN = sum), col.names = c("Season", "Sum of Count"))
 
@@ -165,6 +173,10 @@ Finally, we will look at the count and working days.
 |      2 |        80002 |
 |      3 |       104882 |
 |      4 |       100909 |
+
+The most popular seasons appear to be summer and fall. And the least
+popular season to utilize the bike share is winter. Next, we will look
+at a table of `mnth` and `cnt`.
 
     knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$mnth), FUN = sum), col.names = c("Month", "Sum of Count"))
 
@@ -183,6 +195,10 @@ Finally, we will look at the count and working days.
 |    11 |        27694 |
 |    12 |        30559 |
 
+We can see that the most popular months are those that fall in the
+summer and fall seasons. The last contingency table we will create is
+for `weather` and `cnt`.
+
     knitr::kable(aggregate(bikeDataTrain$cnt, by = list(bikeDataTrain$weathersit), FUN = sum), col.names = c("Weather", "Sum of Count"))
 
 | Weather | Sum of Count |
@@ -191,40 +207,57 @@ Finally, we will look at the count and working days.
 |       2 |       114522 |
 |       3 |         2787 |
 
-The count is higher for the weekdays, rather than the weekends, this
-suggests that bike sharing may be becoming a popular option for the work
-commute. Now, we will create some histograms of the remaining predictors
-vs the reponse.
+The bike share receives the most use when the weather is nice, with no
+rain, snow, or thunderstorms. Now, we will create some histograms of the
+remaining predictors and our reponse variable, `cnt`. We will create
+these histograms using `ggplot` and `geom_jitter`. The first histogram
+will contain our `temp` and `cnt` variables.
 
     g <- ggplot(bikeDataTrain, aes(x = temp, y = cnt))
     g + geom_jitter() + labs(x = "Normalized Temperature", y = "Count of Total Rental Bikes", title = "Temperature vs. Count")
 
 ![](Monday_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
+There is a clear positive trend in the histogram, as the temperature
+becomes warmer, the number of rentals that day increases. The next
+histogram we look at will contain the `atemp` and `cnt` variables.
+
     g <- ggplot(bikeDataTrain, aes(x = atemp, y = cnt))
     g + geom_jitter() + labs(x = "Normalized Feeling Temperature", y = "Count of Total Rental Bikes", title = "Feeling Temperature vs. Count")
 
 ![](Monday_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+Much like the regular temperature, the temperature that it actually
+feels like has a positive relationship with the number of rentals. Next,
+we will create a histogram for the `hum` and `cnt` variables.
 
     g <- ggplot(bikeDataTrain, aes(x = hum, y = cnt))
     g + geom_jitter() + labs(x = "Normalized Humidity", y = "Count of Total Rental Bikes", title = "Humidity vs. Count")
 
 ![](Monday_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
+There doesn’t appear to be a definite relationship between the humidity
+and the count of rental bikes. The final histogram will contain
+`windspeed` and `cnt`.
+
     g <- ggplot(bikeDataTrain, aes(x = windspeed, y = cnt))
     g + geom_jitter() + labs(x = "Normalized Wind Speed", y = "Count of Total Rental Bikes", title = "Wind Speed vs. Count")
 
 ![](Monday_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+
+There appears to be a slight negative relationship between wind speed
+and the number of rentals that day. Next, we will move on to fitting our
+models.
 
 Models
 ======
 
 Now that we have read in our data, created our split, and done some
 exploratory data analysis, we will begin fitting our models. The goal is
-to create two models that predict the cnt variable in our data set.
+to create two models that predict the `cnt` variable in our data set.
 
-Nonensemble Tree Model
-----------------------
+Non-ensemble Tree Model
+-----------------------
 
 The first model we will fit is a regression tree. The main idea of this
 model is to split up our predictor space into regions, and for a given
@@ -259,8 +292,8 @@ parameters.
     ##   0.19314127  1606.978  0.21838272  1342.212
     ##   0.40741491  2016.666  0.02819295  1813.490
     ## 
-    ## RMSE was used to select the optimal model
-    ##  using the smallest value.
+    ## RMSE was used to select the optimal
+    ##  model using the smallest value.
     ## The final value used for the model was cp
     ##  = 0.08328573.
 
@@ -324,8 +357,8 @@ default values rather than providing a grid of tuning parameters.
     ## Tuning parameter 'shrinkage' was held
     ##  parameter 'n.minobsinnode' was held
     ##  constant at a value of 10
-    ## RMSE was used to select the optimal model
-    ##  using the smallest value.
+    ## RMSE was used to select the optimal
+    ##  model using the smallest value.
     ## The final values used for the model
     ##  were n.trees = 150, interaction.depth =
     ##  3, shrinkage = 0.1 and n.minobsinnode = 10.
@@ -334,8 +367,8 @@ The optimal model in this case used n.trees = 150, interaction.depth =
 3, shrinkage = 0.1, and n.minosbinnode = 10. And we can see the training
 RMSE obtained in the output above.
 
-Testing Models on Test Set
-==========================
+Testing Models
+==============
 
 Now that we have determined the optimal fit of each model, we will apply
 our models to the test set. First, we will obtain the test RMSE of the
@@ -356,4 +389,5 @@ of the boosted tree model.
     ##        RMSE    Rsquared         MAE 
     ## 680.4276206   0.8809453 502.2013718
 
-The optimal model in this case is the boosted tree.
+The optimal model in this case is the boosted tree. And the test RMSE
+was minimized at 680.4276206.
