@@ -178,3 +178,20 @@ boostedtreePred <- predict(boostedtreeFit, newdata = bikeDataTest)
 ```
 
 The optimal model in this case is `r ifelse(treeResults[1] < boostedtreeResults[1], "the non-ensemble tree", "the boosted tree")`. And the test RMSE was minimized at `r ifelse(treeResults[1] < boostedtreeResults[1], treeResults[1], boostedtreeResults[1])`. 
+
+
+# Linear Regression Model
+For the last model, a multiple linear regression model shall be added along with the predictions for the model on the test set.
+
+```{r}
+lm_model <- lm(cnt ~ ., data = bikeDataTest)
+lm_model
+```
+
+Now we will predict the values for the multiple linear regression model along with the confidence intervals
+
+
+```{r}
+lm_model_predict <- predict(cnt, data = lm_model, interval = "confidence")
+lm_model_predict
+```
