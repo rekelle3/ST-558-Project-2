@@ -192,6 +192,6 @@ Now we will predict the values for the multiple linear regression model along wi
 
 
 ```{r}
-lm_model_predict <- predict(cnt, data = lm_model, interval = "confidence")
+lm_model_predict <- predict(lm_model, interval = "confidence")
 lm_model_predict
 ```
